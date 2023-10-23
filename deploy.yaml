@@ -13,7 +13,25 @@ after_success:
   - docker build -t zphex/multi-nginx ./nginx
   - docker build -t zphex/multi-server ./server
   - docker build -t zphex/multi-worker ./worker
+# Login to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# Take IMGS and push them to docker hub
+  - docker push zphex/multi-client
+  - docker push zphex/multi-nginx
+  - docker push zphex/multi-server
+  - docker push zphex/multi-worker
 
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: Docker-react
+          environment_name: Docker-react-env
+          existing_bucket_name: elasticbeanstalk-us-east-1-315696465126
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
 
 
 # name: Deploy Complex
@@ -34,14 +52,14 @@ after_success:
 #       - name: Generate deployment package
 #         run: zip -r deploy.zip . -x '*.git*'
 
-#       - name: Deploy to EB
-#         uses: einaregilsson/beanstalk-deploy@v18
-#         with:
-#           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
-#           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-#           application_name: Docker-react
-#           environment_name: Docker-react-env
-#           existing_bucket_name: elasticbeanstalk-us-east-1-315696465126
-#           region: us-east-1
-#           version_label: ${{ github.sha }}
-#           deployment_package: deploy.zip
+      # - name: Deploy to EB
+      #   uses: einaregilsson/beanstalk-deploy@v18
+      #   with:
+      #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+      #     aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+      #     application_name: Docker-react
+      #     environment_name: Docker-react-env
+      #     existing_bucket_name: elasticbeanstalk-us-east-1-315696465126
+      #     region: us-east-1
+      #     version_label: ${{ github.sha }}
+      #     deployment_package: deploy.zip
